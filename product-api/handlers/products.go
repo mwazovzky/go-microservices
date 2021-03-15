@@ -21,14 +21,38 @@ func (p *Products) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if r.Method == http.MethodPost {
+		p.addProduct(rw, r)
+		return
+	}
+
 	// catch all other
 	rw.WriteHeader(http.StatusMethodNotAllowed) // 405
 }
 
 func (p *Products) getProducts(rw http.ResponseWriter, r *http.Request) {
+	p.logger.Println("Handle GET Products")
+
 	list := data.GetProducts()
+
 	err := list.ToJSON(rw)
 	if err != nil {
 		http.Error(rw, "Unable to marshall json", http.StatusInternalServerError)
 	}
+}
+
+/*
+curl -v -X POST http://localhost:9090 -d '{"name": "tea", "description": "Nice cup of tea", "price": 0.99, "sku": "xyz987"}'
+*/
+func (p *Products) addProduct(rw http.ResponseWriter, r *http.Request) {
+	p.logger.Println("Handle POST Product")
+
+	product := &data.Product{}
+
+	err := product.FromJSON(r.Body)
+	if err != nil {
+		http.Error(rw, "Unable to decode request body", http.StatusBadRequest)
+	}
+
+	data.AddProduct(product)
 }
