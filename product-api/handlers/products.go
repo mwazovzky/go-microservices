@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 
@@ -17,10 +16,8 @@ func NewProducts(logger *log.Logger) *Products {
 }
 
 func (p *Products) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	productIndex := data.GetProducts()
-	// Encoder allows to write directly to io and avoid keeping large amount of data in memory
-	// It is also faster then Marshal
-	err := json.NewEncoder(rw).Encode(productIndex)
+	list := data.GetProducts()
+	err := list.ToJSON(rw)
 	if err != nil {
 		http.Error(rw, "Unable to marshall json", http.StatusInternalServerError)
 	}
