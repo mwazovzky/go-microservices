@@ -1,8 +1,11 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"regexp"
+	"strconv"
 
 	"github.com/mwazovzky/microservices-introduction/product-api/data"
 )
@@ -23,6 +26,11 @@ func (p *Products) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	if r.Method == http.MethodPost {
 		p.addProduct(rw, r)
+		return
+	}
+
+	if r.Method == http.MethodPut {
+		p.updateProduct(rw, r)
 		return
 	}
 
@@ -55,4 +63,59 @@ func (p *Products) addProduct(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	data.AddProduct(product)
+}
+
+/*
+curl -v -X PUT http://localhost:9090/2 -d '{"name": "Espresso", "description": "New taste", "price": 3.20, "sku": "fdj777"}'
+*/
+func (p *Products) updateProduct(rw http.ResponseWriter, r *http.Request) {
+	p.logger.Println("Handle PUT Product")
+
+	id, err := parseID(r.URL.Path)
+	if err != nil {
+		http.Error(rw, "Invalid URI", http.StatusBadRequest)
+		return
+	}
+
+	product := &data.Product{}
+
+	err = product.FromJSON(r.Body)
+	if err != nil {
+		http.Error(rw, "Unable to decode request body", http.StatusBadRequest)
+		return
+	}
+
+	err = data.UpdateProduct(id, product)
+
+	if err == data.ErrProductNotFound {
+		http.Error(rw, "Product not found", http.StatusNotFound)
+		return
+	}
+
+	if err != nil {
+		http.Error(rw, "Failed to update product", http.StatusInternalServerError)
+		return
+	}
+}
+
+func parseID(path string) (int, error) {
+	var err error
+	reg := regexp.MustCompile(`/([0-9]+)`)
+	group := reg.FindAllStringSubmatch(path, -1)
+
+	if len(group) != 1 {
+		return 0, fmt.Errorf("Invalid URI")
+	}
+
+	if len(group[0]) != 2 {
+		return 0, fmt.Errorf("Invalid URI")
+	}
+
+	idString := group[0][1]
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
 }
