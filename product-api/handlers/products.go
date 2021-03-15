@@ -18,11 +18,10 @@ func NewProducts(logger *log.Logger) *Products {
 
 func (p *Products) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	productIndex := data.GetProducts()
-	encodedData, err := json.Marshal(productIndex)
+	// Encoder allows to write directly to io and avoid keeping large amount of data in memory
+	// It is also faster then Marshal
+	err := json.NewEncoder(rw).Encode(productIndex)
 	if err != nil {
 		http.Error(rw, "Unable to marshall json", http.StatusInternalServerError)
-		return
 	}
-
-	rw.Write(encodedData)
 }
