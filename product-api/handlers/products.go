@@ -19,9 +19,8 @@ func NewProducts(logger *log.Logger) *Products {
 	return &Products{logger}
 }
 
-/*
-curl -v  http://localhost:9090
-*/
+// GetProducts handles GET requests and returns all current products
+// curl -v  http://localhost:9090
 func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
 	products := data.GetProducts()
 
@@ -31,9 +30,8 @@ func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
-/*
-curl -v -X POST http://localhost:9090 -d '{"name": "tea", "description": "Nice cup of tea", "price": 0.99, "sku": "xyz987"}'
-*/
+// AddProduct handles POST requests to add new products
+// curl -v -X POST http://localhost:9090 -d '{"name": "tea", "description": "Nice cup of tea", "price": 0.99, "sku": "xyz987"}'
 func (p *Products) AddProduct(rw http.ResponseWriter, r *http.Request) {
 	product := getProduct(r)
 
@@ -44,16 +42,10 @@ func (p *Products) AddProduct(rw http.ResponseWriter, r *http.Request) {
 curl -v -X PUT http://localhost:9090/2 -d '{"name": "Espresso", "description": "New taste", "price": 3.20, "sku": "fdj777"}'
 */
 func (p *Products) UpdateProduct(rw http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
-	if err != nil {
-		http.Error(rw, "Unable to parse id", http.StatusBadRequest)
-		return
-	}
-
 	product := getProduct(r)
+	product.ID = getProductID(r)
 
-	err = data.UpdateProduct(id, product)
+	err := data.UpdateProduct(product)
 
 	if err == data.ErrProductNotFound {
 		http.Error(rw, "Product not found", http.StatusNotFound)
@@ -66,41 +58,56 @@ func (p *Products) UpdateProduct(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
-/*
-curl -v -X DELETE http://localhost:9090/2
-*/
+// Delete handles DELETE requests and removes items
+// curl -v -X DELETE http://localhost:9090/2
 func (p *Products) DeleteProduct(rw http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
-	if err != nil {
-		http.Error(rw, "Unable to parse id", http.StatusBadRequest)
-		return
-	}
+	id := getProductID(r)
 
-	err = data.DeleteProduct(id)
+	err := data.DeleteProduct(id)
 
 	if err == data.ErrProductNotFound {
+		p.logger.Println("[ERROR] Product not found")
+
 		http.Error(rw, "Product not found", http.StatusNotFound)
 		return
 	}
 
 	if err != nil {
+		p.logger.Println("[ERROR] Failed to delete product")
+
 		http.Error(rw, "Failed to delete product", http.StatusInternalServerError)
 		return
 	}
+
+	rw.WriteHeader(http.StatusNoContent)
 }
 
-func getProduct(r *http.Request) *data.Product {
-	return r.Context().Value(KeyProduct{}).(*data.Product)
+// getProductID returns the product ID from the URL
+// Panics if cannot convert the id into an integer this should never happen
+// as the router ensures that this is a valid number
+func getProductID(r *http.Request) int {
+	vars := mux.Vars(r)
+
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		panic(err) // should never happen
+	}
+
+	return id
+}
+
+// getProduct returns the product from the URL
+func getProduct(r *http.Request) data.Product {
+	return r.Context().Value(KeyProduct{}).(data.Product)
 }
 
 type KeyProduct struct{}
 
 func (p Products) MiddlwareValidateProduct(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		product := &data.Product{}
+		product := data.Product{}
 
-		err := data.FromJSON(product, r.Body)
+		err := data.FromJSON(&product, r.Body)
 		if err != nil {
 			p.logger.Println("[ERROR] Unable to decode request body")
 			http.Error(rw, "Unable to decode request body", http.StatusBadRequest)

@@ -1,11 +1,6 @@
 package data
 
-import (
-	"fmt"
-	"time"
-)
-
-// https://github.com/go-playground/validator
+// Product defines the structure for an API product
 type Product struct {
 	ID          int     `json:"id"`
 	Name        string  `json:"name" validate:"required"`
@@ -22,73 +17,20 @@ func (p *Product) Validate() error {
 	return validator.validate.Struct(p)
 }
 
-type Products []*Product
+var productRepository = NewRepository()
 
-var productList = []*Product{
-	&Product{
-		ID:          1,
-		Name:        "Latte",
-		Description: "Frothy milk coffee",
-		Price:       2.45,
-		SKU:         "abc323",
-		CreatedAt:   time.Now().UTC().String(),
-		UpdatedAT:   time.Now().UTC().String(),
-	},
-	&Product{
-		ID:          2,
-		Name:        "Espresso",
-		Description: "Short and strong coffee without milk",
-		Price:       1.99,
-		SKU:         "fdj347",
-		CreatedAt:   time.Now().UTC().String(),
-		UpdatedAT:   time.Now().UTC().String(),
-	},
+func GetProducts() []*Product {
+	return productRepository.GetProducts()
 }
 
-func GetProducts() Products {
-	return productList
+func AddProduct(p Product) {
+	productRepository.AddProduct(p)
 }
 
-func AddProduct(p *Product) {
-	p.ID = getNextID()
-	productList = append(productList, p)
-}
-
-func UpdateProduct(id int, p *Product) error {
-	_, index, err := findProduct(id)
-	if err != nil {
-		return err
-	}
-
-	p.ID = id
-	productList[index] = p
-	return nil
+func UpdateProduct(p Product) error {
+	return productRepository.UpdateProduct(p)
 }
 
 func DeleteProduct(id int) error {
-	_, index, err := findProduct(id)
-	if err != nil {
-		return err
-	}
-
-	productList = append(productList[:index], productList[index+1])
-
-	return nil
-}
-
-var ErrProductNotFound = fmt.Errorf("Product not found")
-
-func findProduct(id int) (*Product, int, error) {
-	for index, p := range productList {
-		if p.ID == id {
-			return p, index, nil
-		}
-	}
-
-	return nil, -1, ErrProductNotFound
-}
-
-func getNextID() int {
-	last := productList[len(productList)-1]
-	return last.ID + 1
+	return productRepository.DeleteProduct(id)
 }
