@@ -23,9 +23,9 @@ func NewProducts(logger *log.Logger) *Products {
 curl -v  http://localhost:9090
 */
 func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
-	list := data.GetProducts()
+	products := data.GetProducts()
 
-	err := list.ToJSON(rw)
+	err := data.ToJSON(products, rw)
 	if err != nil {
 		http.Error(rw, "Unable to marshall json", http.StatusInternalServerError)
 	}
@@ -100,7 +100,7 @@ func (p Products) MiddlwareValidateProduct(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		product := &data.Product{}
 
-		err := product.FromJSON(r.Body)
+		err := data.FromJSON(product, r.Body)
 		if err != nil {
 			p.logger.Println("[ERROR] Unable to decode request body")
 			http.Error(rw, "Unable to decode request body", http.StatusBadRequest)
