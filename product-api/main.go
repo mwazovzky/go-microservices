@@ -20,18 +20,18 @@ func main() {
 	sm.Use(productsHandler.MiddlewareLogRequest)
 
 	getRouter := sm.Methods(http.MethodGet).Subrouter()
-	getRouter.HandleFunc("/", productsHandler.GetProducts)
+	getRouter.HandleFunc("/", productsHandler.Index)
 
 	postRouter := sm.Methods(http.MethodPost).Subrouter()
-	postRouter.HandleFunc("/", productsHandler.AddProduct)
+	postRouter.HandleFunc("/", productsHandler.Create)
 	postRouter.Use(productsHandler.MiddlwareValidateProduct)
 
 	putRouter := sm.Methods(http.MethodPut).Subrouter()
-	putRouter.HandleFunc("/{id:[0-9]+}", productsHandler.UpdateProduct)
+	putRouter.HandleFunc("/{id:[0-9]+}", productsHandler.Update)
 	putRouter.Use(productsHandler.MiddlwareValidateProduct)
 
 	deleteRouter := sm.Methods(http.MethodDelete).Subrouter()
-	deleteRouter.HandleFunc("/{id:[0-9]+}", productsHandler.DeleteProduct)
+	deleteRouter.HandleFunc("/{id:[0-9]+}", productsHandler.Delete)
 
 	// https://golang.org/pkg/net/http/#Server
 	server := &http.Server{
