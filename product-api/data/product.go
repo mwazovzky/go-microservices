@@ -2,10 +2,7 @@ package data
 
 import (
 	"fmt"
-	"regexp"
 	"time"
-
-	"github.com/go-playground/validator"
 )
 
 // https://github.com/go-playground/validator
@@ -20,24 +17,9 @@ type Product struct {
 	DeletedAt   string  `json:"-"`
 }
 
-// sku format is qwe-asdf-zxcvb
-func validateSKU(fl validator.FieldLevel) bool {
-	re := regexp.MustCompile(`[a-z]+-[a-z]+-[a-z]+`)
-	matches := re.FindAllString(fl.Field().String(), -1)
-
-	if len(matches) != 1 {
-		return false
-	}
-
-	return true
-}
-
 func (p *Product) Validate() error {
-	validator := validator.New()
-
-	validator.RegisterValidation("sku", validateSKU)
-
-	return validator.Struct(p)
+	validator := NewValidator()
+	return validator.validate.Struct(p)
 }
 
 type Products []*Product
