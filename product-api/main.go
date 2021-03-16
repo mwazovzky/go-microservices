@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/go-openapi/runtime/middleware"
 	"github.com/gorilla/mux"
 	"github.com/mwazovzky/microservices-introduction/product-api/handlers"
 )
@@ -20,18 +21,25 @@ func main() {
 	sm.Use(productsHandler.MiddlewareLogRequest)
 
 	getRouter := sm.Methods(http.MethodGet).Subrouter()
-	getRouter.HandleFunc("/", productsHandler.Index)
+	getRouter.HandleFunc("/products", productsHandler.Index)
 
 	postRouter := sm.Methods(http.MethodPost).Subrouter()
-	postRouter.HandleFunc("/", productsHandler.Create)
+	postRouter.HandleFunc("/products", productsHandler.Create)
 	postRouter.Use(productsHandler.MiddlwareValidateProduct)
 
 	putRouter := sm.Methods(http.MethodPut).Subrouter()
-	putRouter.HandleFunc("/{id:[0-9]+}", productsHandler.Update)
+	putRouter.HandleFunc("/products/{id:[0-9]+}", productsHandler.Update)
 	putRouter.Use(productsHandler.MiddlwareValidateProduct)
 
 	deleteRouter := sm.Methods(http.MethodDelete).Subrouter()
-	deleteRouter.HandleFunc("/{id:[0-9]+}", productsHandler.Delete)
+	deleteRouter.HandleFunc("/products/{id:[0-9]+}", productsHandler.Delete)
+
+	// handler for documentation
+	opts := middleware.RedocOpts{SpecURL: "/swagger.yaml"}
+	sh := middleware.Redoc(opts, nil)
+
+	getRouter.Handle("/docs", sh)
+	getRouter.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
 
 	// https://golang.org/pkg/net/http/#Server
 	server := &http.Server{

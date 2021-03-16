@@ -22,6 +22,16 @@ func NewProducts(logger *log.Logger) *Products {
 	return &Products{logger}
 }
 
+// GenericError is a generic error message returned by a server
+type GenericError struct {
+	Message string `json:"message"`
+}
+
+// ValidationError is a collection of validation error messages
+type ValidationError struct {
+	Messages []string `json:"messages"`
+}
+
 // getProductID returns the product ID from the URL
 // Panics if cannot convert the id into an integer this should never happen
 // as the router ensures that this is a valid number
