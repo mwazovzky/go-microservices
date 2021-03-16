@@ -1,4 +1,4 @@
-// curl -v -X DELETE http://localhost:9090/2
+// curl -v -X DELETE http://localhost:9090/products/2
 package handlers
 
 import (
@@ -6,6 +6,14 @@ import (
 
 	"github.com/mwazovzky/microservices-introduction/product-api/data"
 )
+
+// swagger:route DELETE /products/{id} products deleteProduct
+// Update a products details
+//
+// responses:
+//	201: noContentResponse
+//  404: errorResponse
+//  501: errorResponse
 
 // Delete handles DELETE requests and removes items
 func (p *Products) Delete(rw http.ResponseWriter, r *http.Request) {
