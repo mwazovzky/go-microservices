@@ -66,6 +66,30 @@ func (p *Products) UpdateProduct(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
+/*
+curl -v -X DELETE http://localhost:9090/2
+*/
+func (p *Products) DeleteProduct(rw http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(rw, "Unable to parse id", http.StatusBadRequest)
+		return
+	}
+
+	err = data.DeleteProduct(id)
+
+	if err == data.ErrProductNotFound {
+		http.Error(rw, "Product not found", http.StatusNotFound)
+		return
+	}
+
+	if err != nil {
+		http.Error(rw, "Failed to delete product", http.StatusInternalServerError)
+		return
+	}
+}
+
 func getProduct(r *http.Request) *data.Product {
 	return r.Context().Value(KeyProduct{}).(*data.Product)
 }

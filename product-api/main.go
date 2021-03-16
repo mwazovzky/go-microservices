@@ -30,6 +30,9 @@ func main() {
 	putRouter.HandleFunc("/{id:[0-9]+}", productsHandler.UpdateProduct)
 	putRouter.Use(productsHandler.MiddlwareValidateProduct)
 
+	deleteRouter := sm.Methods(http.MethodDelete).Subrouter()
+	deleteRouter.HandleFunc("/{id:[0-9]+}", productsHandler.DeleteProduct)
+
 	// https://golang.org/pkg/net/http/#Server
 	server := &http.Server{
 		Addr:         ":9090",
