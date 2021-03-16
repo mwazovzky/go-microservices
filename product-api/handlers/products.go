@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"strconv"
@@ -21,8 +22,6 @@ func NewProducts(logger *log.Logger) *Products {
 curl -v  http://localhost:9090
 */
 func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
-	p.logger.Println("Handle GET Products")
-
 	list := data.GetProducts()
 
 	err := list.ToJSON(rw)
@@ -35,14 +34,7 @@ func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
 curl -v -X POST http://localhost:9090 -d '{"name": "tea", "description": "Nice cup of tea", "price": 0.99, "sku": "xyz987"}'
 */
 func (p *Products) AddProduct(rw http.ResponseWriter, r *http.Request) {
-	p.logger.Println("Handle POST Product")
-
-	product := &data.Product{}
-
-	err := product.FromJSON(r.Body)
-	if err != nil {
-		http.Error(rw, "Unable to decode request body", http.StatusBadRequest)
-	}
+	product := getProduct(r)
 
 	data.AddProduct(product)
 }
@@ -51,8 +43,6 @@ func (p *Products) AddProduct(rw http.ResponseWriter, r *http.Request) {
 curl -v -X PUT http://localhost:9090/2 -d '{"name": "Espresso", "description": "New taste", "price": 3.20, "sku": "fdj777"}'
 */
 func (p *Products) UpdateProduct(rw http.ResponseWriter, r *http.Request) {
-	p.logger.Println("Handle PUT Product")
-
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -60,13 +50,7 @@ func (p *Products) UpdateProduct(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	product := &data.Product{}
-
-	err = product.FromJSON(r.Body)
-	if err != nil {
-		http.Error(rw, "Unable to decode request body", http.StatusBadRequest)
-		return
-	}
+	product := getProduct(r)
 
 	err = data.UpdateProduct(id, product)
 
@@ -79,4 +63,34 @@ func (p *Products) UpdateProduct(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, "Failed to update product", http.StatusInternalServerError)
 		return
 	}
+}
+
+func getProduct(r *http.Request) *data.Product {
+	return r.Context().Value(KeyProduct{}).(*data.Product)
+}
+
+type KeyProduct struct{}
+
+func (p Products) MiddlwareValidateProduct(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		product := &data.Product{}
+
+		err := product.FromJSON(r.Body)
+		if err != nil {
+			http.Error(rw, "Unable to decode request body", http.StatusBadRequest)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), KeyProduct{}, product)
+		req := r.WithContext(ctx)
+
+		next.ServeHTTP(rw, req)
+	})
+}
+
+func (p Products) MiddlewareLogRequest(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		p.logger.Printf("Handle %s Product\n", r.Method)
+		next.ServeHTTP(rw, r)
+	})
 }

@@ -17,14 +17,18 @@ func main() {
 	productsHandler := handlers.NewProducts(logger)
 
 	sm := mux.NewRouter()
+	sm.Use(productsHandler.MiddlewareLogRequest)
+
 	getRouter := sm.Methods(http.MethodGet).Subrouter()
 	getRouter.HandleFunc("/", productsHandler.GetProducts)
 
 	postRouter := sm.Methods(http.MethodPost).Subrouter()
 	postRouter.HandleFunc("/", productsHandler.AddProduct)
+	postRouter.Use(productsHandler.MiddlwareValidateProduct)
 
 	putRouter := sm.Methods(http.MethodPut).Subrouter()
 	putRouter.HandleFunc("/{id:[0-9]+}", productsHandler.UpdateProduct)
+	putRouter.Use(productsHandler.MiddlwareValidateProduct)
 
 	// https://golang.org/pkg/net/http/#Server
 	server := &http.Server{
