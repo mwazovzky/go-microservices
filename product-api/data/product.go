@@ -51,6 +51,10 @@ func GetProducts() []*Product {
 	return productRepository.GetProducts()
 }
 
+func FindProduct(id int) (*Product, error) {
+	return productRepository.FindProduct(id)
+}
+
 func AddProduct(p Product) {
 	productRepository.AddProduct(p)
 }
