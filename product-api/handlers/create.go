@@ -20,4 +20,6 @@ func (p *Products) Create(rw http.ResponseWriter, r *http.Request) {
 	product := getProduct(r)
 
 	data.AddProduct(product)
+
+	rw.WriteHeader(http.StatusNoContent)
 }

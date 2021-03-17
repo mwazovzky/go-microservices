@@ -30,6 +30,7 @@ func (p *Products) Show(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	rw.Header().Add("Content-Type", "application/json")
 	err = data.ToJSON(product, rw)
 	if err != nil {
 		// we should never be here but log the error just incase

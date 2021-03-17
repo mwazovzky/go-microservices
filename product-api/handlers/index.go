@@ -16,6 +16,8 @@ import (
 func (p *Products) Index(rw http.ResponseWriter, r *http.Request) {
 	products := data.GetProducts()
 
+	rw.Header().Add("Content-Type", "application/json")
+
 	err := data.ToJSON(products, rw)
 	if err != nil {
 		http.Error(rw, "Unable to marshall json", http.StatusInternalServerError)
