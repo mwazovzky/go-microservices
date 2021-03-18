@@ -9,13 +9,22 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"github.com/mwazovzky/microservices-introduction/product-images/files"
 	"github.com/mwazovzky/microservices-introduction/product-images/handlers"
 )
 
-var port = ":9090"
-var logLevel = "debug"
-var basePath = "./images"
+var port string
+var logLevel string
+var basePath string
+
+func init() {
+	godotenv.Load()
+
+	port = os.Getenv("PORT")
+	logLevel = os.Getenv("LOG_LEVEL")
+	basePath = os.Getenv("BASE_PATH")
+}
 
 func main() {
 	logger := log.New(os.Stdout, "product-api", log.LstdFlags)
@@ -46,7 +55,7 @@ func main() {
 
 	// https://golang.org/pkg/net/http/#Server
 	server := &http.Server{
-		Addr:         ":9090",
+		Addr:         port,
 		Handler:      sm,
 		IdleTimeout:  120 * time.Second,
 		ReadTimeout:  1 * time.Second,
@@ -54,7 +63,7 @@ func main() {
 	}
 
 	go func() {
-		log.Println("Starting http server at :9090")
+		log.Println("Starting http server at", port)
 		err := server.ListenAndServe()
 		if err != nil {
 			logger.Fatal(err)
