@@ -6,7 +6,10 @@
 
 <script>
 // @ is an alias to /src
+import axios from "axios";
 import ProductIndex from "@/components/Product/Index.vue";
+
+const BASE_URL = process.env.VUE_APP_PRODUCT_API_URL;
 
 export default {
   name: "Menu",
@@ -19,7 +22,7 @@ export default {
     };
   },
   created() {
-    this.$http.get().then(res => {
+    axios.get(BASE_URL).then(res => {
       this.products = res.data;
     });
   },

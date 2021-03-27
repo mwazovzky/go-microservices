@@ -1,6 +1,10 @@
 <template>
   <div class="product-card">
-    <div class="fb-20">{{ product.name }}</div>
+    <div class="fb-20">
+      <a :href="href">
+        {{ product.name }}
+      </a>
+    </div>
     <div class="fb-20">{{ product.sku }}</div>
     <div class="flex-grow">{{ product.description }}</div>
     <div class="w-50">{{ product.price }}</div>
@@ -14,6 +18,11 @@ export default {
     product: {
       type: Object,
       required: true,
+    },
+  },
+  computed: {
+    href() {
+      return `/menu/${this.product.id}`;
     },
   },
 };
