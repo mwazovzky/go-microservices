@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"path/filepath"
@@ -20,6 +21,28 @@ type Files struct {
 // NewFiles creates a new File handler
 func NewFiles(s files.Storage, l hclog.Logger) *Files {
 	return &Files{store: s, logger: l}
+}
+
+// curl localhost:9090/images
+// Index return list of files for the specified id
+func (f *Files) Index(rw http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	// skip validatioan as we have regex for url
+
+	// Get list of images for product with specofied id
+	list, err := f.store.Index(id)
+	if err != nil {
+		f.logger.Error("Unable to get list of images for", "id", id, "error", err)
+		http.Error(rw, "Unable to get list of images", http.StatusInternalServerError)
+		return
+	}
+
+	// Return list of files
+	rw.Header().Add("Content-Type", "application/json")
+	// data, _ := json.Marshal(&list)
+	// rw.Write(data)
+	json.NewEncoder(rw).Encode(&list)
 }
 
 // curl -vv localhost:9090/images/1/test.png -X POST --data-binary @gopher.png

@@ -1,6 +1,7 @@
 package files
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -88,4 +89,34 @@ func (l *Local) Get(path string) (*os.File, error) {
 func (l *Local) fullPath(path string) string {
 	// append the given path to the base path
 	return filepath.Join(l.basePath, path)
+}
+
+func (l *Local) Index(id string) ([]string, error) {
+	fp := l.fullPath(id)
+
+	return getFiles(fp)
+}
+
+func getFiles(path string) ([]string, error) {
+	isDir, err := isDir(path)
+	if err != nil || !isDir {
+		return nil, fmt.Errorf("Not a valid path %s", path)
+	}
+
+	folder, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to open file %s. Err: %s", path, err)
+	}
+
+	return folder.Readdirnames(0)
+}
+
+func isDir(pathname string) (bool, error) {
+	fs, err := os.Lstat(pathname)
+
+	if err != nil {
+		return false, fmt.Errorf("Failed to get data for file %s. Err: %s", pathname, err)
+	}
+
+	return fs.Mode().IsDir(), nil
 }

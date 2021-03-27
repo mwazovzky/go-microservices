@@ -50,9 +50,11 @@ func main() {
 	ph.HandleFunc("/images/{id:[0-9]+}/{filename:[a-zA-Z]+\\.[a-z]{3}}", fh.Upload)
 	ph.HandleFunc("/images", fh.UploadMultipart)
 
-	// create subrouter to download files
-	// curl -v localhost:9090/images/1/test.png -o test2.png
+	// create subrouter for get requests
 	gh := sm.Methods(http.MethodGet).Subrouter()
+	// curl -v localhost:9090/images/1
+	gh.HandleFunc("/images/{id:[0-9]+}", fh.Index)
+	// curl -v localhost:9090/images/1/test.png -o test2.png
 	gh.Handle(
 		"/images/{id:[0-9]+}/{filename:[a-zA-Z]+\\.[a-z]{3}}",
 		http.StripPrefix("/images/", http.FileServer(http.Dir(basePath))),
