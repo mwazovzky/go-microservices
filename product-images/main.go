@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"time"
 
+	gohandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	hclog "github.com/hashicorp/go-hclog"
 	"github.com/joho/godotenv"
@@ -46,7 +47,8 @@ func main() {
 
 	// create subrouter to upload files
 	ph := sm.Methods(http.MethodPost).Subrouter()
-	ph.HandleFunc("/images/{id:[0-9]+}/{filename:[a-zA-Z]+\\.[a-z]{3}}", fh.ServeHTTP)
+	ph.HandleFunc("/images/{id:[0-9]+}/{filename:[a-zA-Z]+\\.[a-z]{3}}", fh.Upload)
+	ph.HandleFunc("/images", fh.UploadMultipart)
 
 	// create subrouter to download files
 	// curl -v localhost:9090/images/1/test.png -o test2.png
@@ -56,10 +58,13 @@ func main() {
 		http.StripPrefix("/images/", http.FileServer(http.Dir(basePath))),
 	)
 
+	// CORS middleware
+	cors := gohandlers.CORS(gohandlers.AllowedOrigins([]string{"*"}))
+
 	// https://golang.org/pkg/net/http/#Server
 	server := &http.Server{
 		Addr:         port,
-		Handler:      sm,
+		Handler:      cors(sm),
 		IdleTimeout:  120 * time.Second,
 		ReadTimeout:  1 * time.Second,
 		WriteTimeout: 1 * time.Second,

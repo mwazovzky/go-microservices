@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"io"
 	"net/http"
 	"path/filepath"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/hashicorp/go-hclog"
@@ -21,8 +23,8 @@ func NewFiles(s files.Storage, l hclog.Logger) *Files {
 }
 
 // curl -vv localhost:9090/images/1/test.png -X POST --data-binary @gopher.png
-// ServeHTTP implements the http.Handler interface
-func (f *Files) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+// Upload implements the http.Handler interface
+func (f *Files) Upload(rw http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 	filename := vars["filename"]
@@ -34,7 +36,36 @@ func (f *Files) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		f.invalidURI(rw, r.URL.String())
 	}
 
-	f.saveFile(id, filename, rw, r)
+	f.saveFile(id, filename, rw, r.Body)
+}
+
+const MAX_MEMORY = 1024 * 128
+
+// UploadMultipart multipart form data
+func (f *Files) UploadMultipart(rw http.ResponseWriter, r *http.Request) {
+	err := r.ParseMultipartForm(MAX_MEMORY)
+	if err != nil {
+		f.logger.Error("Unable to parse multipart form", "error", err)
+		http.Error(rw, "Unable to parse multipart form", http.StatusBadRequest)
+		return
+	}
+
+	_, err = strconv.Atoi(r.FormValue("id"))
+	if err != nil {
+		f.logger.Error("Validation error. Expected integer id", "error", err)
+		http.Error(rw, "Validation error. Expected integer id", http.StatusBadRequest)
+		return
+	}
+
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		f.logger.Error("Expected file", "error", err)
+		http.Error(rw, "Expected file", http.StatusBadRequest)
+		return
+	}
+
+	f.saveFile(r.FormValue("id"), header.Filename, rw, file)
+
 }
 
 func (f *Files) invalidURI(rw http.ResponseWriter, uri string) {
@@ -43,11 +74,11 @@ func (f *Files) invalidURI(rw http.ResponseWriter, uri string) {
 }
 
 // saveFile saves the contents of the request to a file
-func (f *Files) saveFile(id, path string, rw http.ResponseWriter, r *http.Request) {
+func (f *Files) saveFile(id, path string, rw http.ResponseWriter, r io.Reader) {
 	f.logger.Info("Save file for product", "id", id, "path", path)
 
 	fp := filepath.Join(id, path)
-	err := f.store.Save(fp, r.Body)
+	err := f.store.Save(fp, r)
 	if err != nil {
 		f.logger.Error("Unable to save file", "error", err)
 		http.Error(rw, "Unable to save file", http.StatusInternalServerError)
