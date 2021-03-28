@@ -54,11 +54,15 @@ func main() {
 	gh := sm.Methods(http.MethodGet).Subrouter()
 	// curl -v localhost:9090/images/1
 	gh.HandleFunc("/images/{id:[0-9]+}", fh.Index)
-	// curl -v localhost:9090/images/1/test.png -o test2.png
+	// curl -v localhost:9091/images/1/test.png -o test2.png
+	// curl -v localhost:9091/images/1/test.png --compressed -o test2.png
 	gh.Handle(
 		"/images/{id:[0-9]+}/{filename:[a-zA-Z]+\\.[a-z]{3}}",
 		http.StripPrefix("/images/", http.FileServer(http.Dir(basePath))),
 	)
+	// create gzip middleware
+	gzip := handlers.Gzip{}
+	gh.Use(gzip.GzipMiddleware)
 
 	// CORS middleware
 	cors := gohandlers.CORS(gohandlers.AllowedOrigins([]string{"*"}))

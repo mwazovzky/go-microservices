@@ -23,7 +23,7 @@ func NewFiles(s files.Storage, l hclog.Logger) *Files {
 	return &Files{store: s, logger: l}
 }
 
-// curl localhost:9090/images
+// curl localhost:9091/images
 // Index return list of files for the specified id
 func (f *Files) Index(rw http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -45,7 +45,7 @@ func (f *Files) Index(rw http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(rw).Encode(&list)
 }
 
-// curl -vv localhost:9090/images/1/test.png -X POST --data-binary @gopher.png
+// curl -vv localhost:9091/images/1/test.png -X POST --data-binary @gopher.png
 // Upload implements the http.Handler interface
 func (f *Files) Upload(rw http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
