@@ -1,16 +1,27 @@
+// Service definition file
 syntax = "proto3";
 
 option go_package = "/currency";
 
+// Currency Service defines allowed methods
 service Currency {
     rpc GetRate(RateRequest) returns (RateResponse);
 }
 
+// RateRequest defines request for GetRate call
 message RateRequest {
-    string Base = 1;
-    string Destination = 2;
+    Currencies Base = 1;
+    Currencies Destination = 2;
 }
 
+// RateRequest defines response for GetRate call
 message RateResponse {
     float Rate = 1;
+}
+
+// Currencies is an enum which represents allowed currencies for the API
+enum Currencies {
+    EUR = 0;
+    USD = 1;
+    GBP = 6;
 }
