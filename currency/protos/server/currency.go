@@ -8,17 +8,17 @@ import (
 	protos "github.com/mwazovzky/microservices-introduction/currency/protos/currency"
 )
 
-type Currency struct {
+type CurrencyServer struct {
 	protos.UnimplementedCurrencyServer
 	log hclog.Logger
 }
 
-func NewCurrency(l hclog.Logger) *Currency {
-	return &Currency{log: l}
+func NewCurrencyServer(l hclog.Logger) *CurrencyServer {
+	return &CurrencyServer{log: l}
 }
 
-func (c *Currency) GetRate(ctx context.Context, rr *protos.RateRequest) (*protos.RateResponse, error) {
-	c.log.Info("Handle GetRate", "base", rr.GetBase(), "destination", rr.GetDestination())
+func (cs *CurrencyServer) GetRate(ctx context.Context, rr *protos.RateRequest) (*protos.RateResponse, error) {
+	cs.log.Info("Handle GetRate", "base", rr.GetBase(), "destination", rr.GetDestination())
 
 	return &protos.RateResponse{Rate: 0.5}, nil
 }

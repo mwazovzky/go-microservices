@@ -11,12 +11,25 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	gohandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	protos "github.com/mwazovzky/microservices-introduction/currency/protos/currency"
 	"github.com/mwazovzky/microservices-introduction/product-api/handlers"
+	"google.golang.org/grpc"
 )
 
 func main() {
 	logger := log.New(os.Stdout, "product-api", log.LstdFlags)
-	productsHandler := handlers.NewProducts(logger)
+
+	// Connect to gRPC service
+	conn, err := grpc.Dial("localhost:9092", grpc.WithInsecure())
+	if err != nil {
+		panic(err)
+	}
+	defer conn.Close()
+
+	// Create gRPC client
+	cc := protos.NewCurrencyClient(conn)
+
+	productsHandler := handlers.NewProducts(logger, cc)
 
 	sm := mux.NewRouter()
 	sm.Use(productsHandler.MiddlewareLogRequest)

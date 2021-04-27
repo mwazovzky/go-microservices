@@ -15,7 +15,7 @@ func main() {
 	log := hclog.Default()
 
 	gs := grpc.NewServer()
-	cs := server.NewCurrency(log)
+	cs := server.NewCurrencyServer(log)
 
 	protos.RegisterCurrencyServer(gs, cs)
 
