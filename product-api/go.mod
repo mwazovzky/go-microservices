@@ -14,6 +14,9 @@ require (
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/leodido/go-urn v1.2.1 // indirect
+	github.com/mwazovzky/microservices-introduction/currency/protos/currency v0.0.0
 	google.golang.org/grpc v1.37.0
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 )
+
+replace github.com/mwazovzky/microservices-introduction/currency/protos/currency v0.0.0 => ../currency/protos/currency
