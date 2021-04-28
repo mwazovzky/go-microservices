@@ -6,7 +6,7 @@ import (
 
 	hclog "github.com/hashicorp/go-hclog"
 	protos "github.com/mwazovzky/microservices-introduction/currency/protos/currency"
-	"github.com/mwazovzky/microservices-introduction/currency/protos/server"
+	"github.com/mwazovzky/microservices-introduction/currency/server"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
