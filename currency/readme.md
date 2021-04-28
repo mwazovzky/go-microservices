@@ -1,6 +1,8 @@
-# GRPC
+# User Guide
 
-## Useful links
+## GRPC
+
+### Useful links
 
 [Protocol Buffers - Language Guide (proto3)](https://developers.google.com/protocol-buffers/docs/proto3)
 [Protocol Buffers - Encoding](https://developers.google.com/protocol-buffers/docs/encoding)
@@ -8,25 +10,25 @@
 [GRPC quick start](https://grpc.io/docs/languages/go/quickstart/)
 [grpcCurl](https://github.com/fullstorydev/grpcurl)
 
-## Install grpc
+### Install grpc
 
 ```
 go get google.golang.org/protobuf/cmd/protoc-gen-go
 go get google.golang.org/grpc/cmd/protoc-gen-go-grpc
 ```
 
-## Generate service
+### Generate service
 
 ```
 make protoc
 ```
 
-## Make grpc request
+### Make grpc request
 
 need to register reflection for the service to be able get service info
 can be turned of for production environment
 
-### Get service info using reflection
+Get service info using reflection
 
 ```
 $ grpcurl --plaintext localhost:9092 list
@@ -54,11 +56,19 @@ message RateResponse {
 }
 ```
 
-### Call servive methods
+Call servive methods
 
 ```
 $ grpcurl --plaintext -d '{"Base": "GBP", "Destination": "USD"}' localhost:9092 Currency.GetRate
 {
   "Rate": 0.5
 }
+```
+
+## Testing
+
+### Run tests
+
+```
+go test -v ./data
 ```
