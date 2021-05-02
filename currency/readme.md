@@ -59,9 +59,9 @@ message RateResponse {
 Call servive methods
 
 ```
-$ grpcurl --plaintext -d '{"Base": "GBP", "Destination": "USD"}' localhost:9092 Currency.GetRate
+$ grpcurl --plaintext -d '{"Base": "EUR", "Destination": "USD"}' localhost:9092 Currency.GetRate
 {
-  "Rate": 0.5
+  "Rate": 1.2082
 }
 ```
 

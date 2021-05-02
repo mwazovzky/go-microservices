@@ -5,6 +5,7 @@ import (
 	"os"
 
 	hclog "github.com/hashicorp/go-hclog"
+	"github.com/mwazovzky/microservices-introduction/currency/data"
 	protos "github.com/mwazovzky/microservices-introduction/currency/protos/currency"
 	"github.com/mwazovzky/microservices-introduction/currency/server"
 	"google.golang.org/grpc"
@@ -14,8 +15,15 @@ import (
 func main() {
 	log := hclog.Default()
 
+	rates, err := data.NewExchangeRates(log)
+	if err != nil {
+		log.Error("Unable to load exchange rates", "error", err)
+		os.Exit(1)
+	}
+
 	gs := grpc.NewServer()
-	cs := server.NewCurrencyServer(log)
+
+	cs := server.NewCurrencyServer(rates, log)
 
 	protos.RegisterCurrencyServer(gs, cs)
 

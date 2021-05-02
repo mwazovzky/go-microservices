@@ -5,20 +5,27 @@ import (
 	"context"
 
 	hclog "github.com/hashicorp/go-hclog"
+	"github.com/mwazovzky/microservices-introduction/currency/data"
 	protos "github.com/mwazovzky/microservices-introduction/currency/protos/currency"
 )
 
 type CurrencyServer struct {
 	protos.UnimplementedCurrencyServer
-	log hclog.Logger
+	rates *data.ExchangeRates
+	log   hclog.Logger
 }
 
-func NewCurrencyServer(l hclog.Logger) *CurrencyServer {
-	return &CurrencyServer{log: l}
+func NewCurrencyServer(r *data.ExchangeRates, l hclog.Logger) *CurrencyServer {
+	return &CurrencyServer{rates: r, log: l}
 }
 
 func (cs *CurrencyServer) GetRate(ctx context.Context, rr *protos.RateRequest) (*protos.RateResponse, error) {
 	cs.log.Info("Handle GetRate", "base", rr.GetBase(), "destination", rr.GetDestination())
 
-	return &protos.RateResponse{Rate: 0.5}, nil
+	rate, err := cs.rates.GetRate(rr.GetBase().String(), rr.GetDestination().String())
+	if err != nil {
+		return nil, err
+	}
+
+	return &protos.RateResponse{Rate: rate}, nil
 }

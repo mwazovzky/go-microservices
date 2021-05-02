@@ -33,6 +33,20 @@ func NewExchangeRates(l hclog.Logger) (*ExchangeRates, error) {
 	return er, err
 }
 
+func (er *ExchangeRates) GetRate(base, dest string) (float64, error) {
+	br, ok := er.rates[base]
+	if !ok {
+		return 0, fmt.Errorf("Rate not found for currrency %s", base)
+	}
+
+	dr, ok := er.rates[dest]
+	if !ok {
+		return 0, fmt.Errorf("Rate not found for currrency %s", dest)
+	}
+
+	return dr / br, nil
+}
+
 func (er *ExchangeRates) getRates() error {
 	res, err := http.DefaultClient.Get(ECB_URL)
 	if err != nil {
@@ -54,6 +68,8 @@ func (er *ExchangeRates) getRates() error {
 		}
 		er.rates[c.Currency] = r
 	}
+
+	er.rates["EUR"] = 1
 
 	return nil
 }
