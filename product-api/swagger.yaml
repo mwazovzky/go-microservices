@@ -31,7 +31,7 @@ definitions:
         x-go-name: Name
       price:
         description: the price for the product
-        format: float
+        format: double
         minimum: 0.01
         type: number
         x-go-name: Price
