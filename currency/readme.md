@@ -63,6 +63,34 @@ $ grpcurl --plaintext -d '{"Base": "EUR", "Destination": "USD"}' localhost:9092 
 {
   "Rate": 1.2082
 }
+
+$ grpcurl --plaintext --msg-template -d @ localhost:9092 Currency/SubscribeRates
+{
+  "Rate": 12
+}
+{
+  "Rate": 12
+}
+...
+
+$ grpcurl --plaintext --msg-template localhost:9092 describe Currency.SubscribeRates
+Currency.SubscribeRates is a method:
+rpc SubscribeRates ( stream .RateRequest ) returns ( stream .RateResponse );
+
+$ grpcurl --plaintext --msg-template localhost:9092 describe RateRequest
+RateRequest is a message:
+message RateRequest {
+  .Currencies Base = 1;
+  .Currencies Destination = 2;
+}
+
+Message template:
+{
+  "Base": "EUR",
+  "Destination": "EUR"
+}
+
+// can put message to grpc input
 ```
 
 ## Testing
