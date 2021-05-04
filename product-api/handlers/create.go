@@ -3,8 +3,6 @@ package handlers
 
 import (
 	"net/http"
-
-	"github.com/mwazovzky/microservices-introduction/product-api/data"
 )
 
 // swagger:route POST /products products createProduct
@@ -19,7 +17,7 @@ import (
 func (p *Products) Create(rw http.ResponseWriter, r *http.Request) {
 	product := getProduct(r)
 
-	data.AddProduct(product)
+	p.data.AddProduct(product)
 
 	rw.WriteHeader(http.StatusNoContent)
 }

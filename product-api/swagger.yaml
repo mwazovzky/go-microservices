@@ -65,6 +65,13 @@ paths:
     get:
       description: Return a list of products from the database
       operationId: listProducts
+      parameters:
+      - description: |-
+          Currency used when returning the price of the product,
+          when not specified currency is returned in GBP.
+        in: query
+        name: Currency
+        type: string
       responses:
         "200":
           $ref: '#/responses/productsResponse'

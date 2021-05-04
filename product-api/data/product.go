@@ -45,24 +45,4 @@ func (p *Product) Validate() error {
 	return validator.validate.Struct(p)
 }
 
-var productRepository = NewRepository()
-
-func GetProducts() []*Product {
-	return productRepository.GetProducts()
-}
-
-func FindProduct(id int) (*Product, error) {
-	return productRepository.FindProduct(id)
-}
-
-func AddProduct(p Product) {
-	productRepository.AddProduct(p)
-}
-
-func UpdateProduct(p Product) error {
-	return productRepository.UpdateProduct(p)
-}
-
-func DeleteProduct(id int) error {
-	return productRepository.DeleteProduct(id)
-}
+type ProductList []*Product

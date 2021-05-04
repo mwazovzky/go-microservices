@@ -19,7 +19,7 @@ import (
 func (p *Products) Delete(rw http.ResponseWriter, r *http.Request) {
 	id := getProductID(r)
 
-	err := data.DeleteProduct(id)
+	err := p.data.DeleteProduct(id)
 
 	if err == data.ErrProductNotFound {
 		p.logger.Println("[ERROR] Product not found")

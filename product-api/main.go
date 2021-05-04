@@ -12,6 +12,7 @@ import (
 	gohandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	protos "github.com/mwazovzky/microservices-introduction/currency/protos/currency"
+	"github.com/mwazovzky/microservices-introduction/product-api/data"
 	"github.com/mwazovzky/microservices-introduction/product-api/handlers"
 	"google.golang.org/grpc"
 )
@@ -29,13 +30,19 @@ func main() {
 	// Create gRPC client
 	cc := protos.NewCurrencyClient(conn)
 
-	productsHandler := handlers.NewProducts(logger, cc)
+	// Create products storage/service
+	repository := data.NewRepository()
+	db := data.NewProducts(repository, cc)
+
+	productsHandler := handlers.NewProducts(db, logger)
 
 	sm := mux.NewRouter()
 	sm.Use(productsHandler.MiddlewareLogRequest)
 
 	getRouter := sm.Methods(http.MethodGet).Subrouter()
+	getRouter.HandleFunc("/products", productsHandler.Index).Queries("currency", "{[A-Z]{3}}")
 	getRouter.HandleFunc("/products", productsHandler.Index)
+	getRouter.HandleFunc("/products/{id:[0-9]+}", productsHandler.Show).Queries("currency", "{[A-Z]{3}}")
 	getRouter.HandleFunc("/products/{id:[0-9]+}", productsHandler.Show)
 
 	postRouter := sm.Methods(http.MethodPost).Subrouter()

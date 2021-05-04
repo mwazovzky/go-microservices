@@ -20,7 +20,7 @@ func (p *Products) Update(rw http.ResponseWriter, r *http.Request) {
 	product := getProduct(r)
 	product.ID = getProductID(r)
 
-	err := data.UpdateProduct(product)
+	err := p.data.UpdateProduct(product)
 
 	if err == data.ErrProductNotFound {
 		http.Error(rw, "Product not found", http.StatusNotFound)
